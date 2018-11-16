@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "datapacks",
+    "name": "Data Packs Helper",
+    "description": "A mod that makes data (advancements and loot tables) access easier.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/liachmodded/datapacks",
+    "updateUrl": "",
+    "authorList": [
+      "liach"
+    ],
+    "credits": "liach for the idea and implementation",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
