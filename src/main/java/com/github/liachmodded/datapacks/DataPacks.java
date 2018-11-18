@@ -68,8 +68,11 @@ public final class DataPacks {
     return this.manager.getEnabled()
         .stream()
         .flatMap(pack -> {
+          if (!pack.get("loot_tables").has(location, "json")) {
+            return Stream.empty();
+          }
           try {
-            return Stream.of(pack.get("loot_tables").getContent(location));
+            return Stream.of(pack.get("loot_tables").getContent(location, "json"));
           } catch (IOException ex) {
             LOGGER.error("Error loading loot table at {}", location, ex);
             return Stream.empty();

@@ -12,9 +12,9 @@ import java.util.function.Supplier;
  */
 public interface IData {
 
-  String getContent(ResourceLocation location) throws IOException;
+  String getContent(ResourceLocation location, String suffix) throws IOException;
 
-  boolean has(ResourceLocation location);
+  boolean has(ResourceLocation location, String suffix);
 
   Set<String> getDomains();
 

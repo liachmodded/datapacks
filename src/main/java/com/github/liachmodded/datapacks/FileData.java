@@ -44,19 +44,20 @@ class FileData implements IData {
     return format.locateDomain(typeDirectory, type, domain);
   }
 
-  private Path path(ResourceLocation location) {
+  private Path path(ResourceLocation location, String suffix) {
     Path domain = locateDomain(location.getNamespace());
-    return domain.resolve(domain.getFileSystem().getPath("", location.getPath().split("/")));
+    String name = location.getPath() + '.' + suffix;
+    return domain.resolve(domain.getFileSystem().getPath("", name.split("/")));
   }
 
   @Override
-  public String getContent(ResourceLocation location) throws IOException {
-    return new String(Files.readAllBytes(path(location)), StandardCharsets.UTF_8);
+  public String getContent(ResourceLocation location, String suffix) throws IOException {
+    return new String(Files.readAllBytes(path(location, suffix)), StandardCharsets.UTF_8);
   }
 
   @Override
-  public boolean has(ResourceLocation location) {
-    return Files.exists(path(location));
+  public boolean has(ResourceLocation location, String suffix) {
+    return Files.exists(path(location, suffix));
   }
 
   @Override
@@ -94,7 +95,7 @@ class FileData implements IData {
   }
 
   private ResourceLocation key(String domain, Path domainPath, Path current) {
-    String name = StreamSupport.stream(current.relativize(domainPath).spliterator(), false).map(Path::toString).collect(Collectors.joining("/"));
+    String name = StreamSupport.stream(domainPath.relativize(current).normalize().spliterator(), false).map(Path::toString).collect(Collectors.joining("/"));
     return new ResourceLocation(domain, FilenameUtils.removeExtension(name));
   }
 }

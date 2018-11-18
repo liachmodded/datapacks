@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  */
 class DataPackManager implements IDataPackManager {
   private static final DirectoryStream.Filter<Path> FILTER = path ->
-      (Files.isRegularFile(path) && MoreFiles.getFileExtension(path).equals(".zip")) ||
+      (Files.isRegularFile(path) && MoreFiles.getFileExtension(path).equals("zip")) ||
           Files.isDirectory(path) && Files.isRegularFile(path.resolve("pack.mcmeta"));
   private static final Logger LOGGER = LogManager.getLogger();
   private final Set<String> testTypes = Sets.newHashSet("advancements", "loot_tables", "functions");
@@ -85,10 +85,12 @@ class DataPackManager implements IDataPackManager {
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory, FILTER)) {
       for (Path each : directoryStream) {
         if (Files.isDirectory(each)) {
-          resolveMetaAndAdd(each);
+          LOGGER.info("Found directory {}", each);
+          resolveMetaAndAdd(each.getFileName().toString(), each);
         } else if (Files.isRegularFile(each)) {
+          LOGGER.info("Found zip file {}", each);
           FileSystem zip = FileSystems.newFileSystem(each, null);
-          resolveMetaAndAdd(zip.getPath(""));
+          resolveMetaAndAdd(MoreFiles.getNameWithoutExtension(each), zip.getPath("/"));
         }
       }
     } catch (IOException ex) {
@@ -96,9 +98,12 @@ class DataPackManager implements IDataPackManager {
     }
 
     enabledPacks.addAll(packs);
+
+    LOGGER.info("Loaded Packs:");
+    packs.forEach(LOGGER::info);
   }
 
-  private void resolveMetaAndAdd(Path each) {
+  private void resolveMetaAndAdd(String name, Path each) {
     Path meta = each.resolve("pack.mcmeta");
     if (Files.isRegularFile(meta)) {
       ITextComponent text;
@@ -111,18 +116,18 @@ class DataPackManager implements IDataPackManager {
         String desc = JsonUtils.getString(packObject, "description");
         text = new TextComponentString(desc);
       } catch (IOException | IllegalStateException | JsonSyntaxException | UncheckedIOException ex) {
-        LOGGER.error("Error reading pack mcmeta for directory {}", each.getFileName(), ex);
+        LOGGER.error("Error reading pack mcmeta for pack {}", name, ex);
         text = new TextComponentString("");
       }
-      packs.add(new FileDataPack(each, text, old == null ? detectFormat(each) : old ? PackFormat.TYPE_NAMESPACE : PackFormat.NAMESPACE_TYPE));
+      packs.add(new FileDataPack(name, each, text, old == null ? detectFormat(each) : old ? PackFormat.TYPE_NAMESPACE : PackFormat.NAMESPACE_TYPE));
     } else {
-      packs.add(new FileDataPack(each, new TextComponentString(""), detectFormat(each)));
+      packs.add(new FileDataPack(name, each, new TextComponentString(""), detectFormat(each)));
     }
   }
 
   // data/modid/type or data/type/modid
   private PackFormat detectFormat(Path root) {
-    Path data = root.resolve("data");
+    Path data = root.resolve("data/");
     if (Files.notExists(data)) {
       return PackFormat.TYPE_NAMESPACE;
     }

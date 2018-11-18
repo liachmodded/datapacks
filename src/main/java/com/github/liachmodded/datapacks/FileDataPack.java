@@ -29,8 +29,8 @@ class FileDataPack implements IDataPack {
   private final Map<String, FileData> dataMap = new HashMap<>();
   private final PackFormat format;
 
-  FileDataPack(Path root, ITextComponent description, PackFormat format) {
-    this.name = root.getFileName().toString();
+  FileDataPack(String name, Path root, ITextComponent description, PackFormat format) {
+    this.name = name;
     this.directory = root;
     this.format = format;
     this.typeRoot = format.getTypeRoot(root);
