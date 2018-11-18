@@ -1,6 +1,6 @@
 package com.github.liachmodded.datapacks;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.MoreObjects;
 
 import net.minecraft.util.text.ITextComponent;
 
@@ -9,13 +9,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  *
@@ -29,51 +27,30 @@ class FileDataPack implements IDataPack {
   private final ITextComponent description;
   private final Set<String> domains;
   private final Map<String, FileData> dataMap = new HashMap<>();
-  private final boolean old;
+  private final PackFormat format;
 
-  FileDataPack(Path root, ITextComponent description, boolean old) {
+  FileDataPack(Path root, ITextComponent description, PackFormat format) {
     this.name = root.getFileName().toString();
     this.directory = root;
-    this.old = old;
-    this.typeRoot = old ? determineTypeDirectory(root) : root.resolve("data");
+    this.format = format;
+    this.typeRoot = format.getTypeRoot(root);
     this.description = description;
-    this.domains = old ? setupOldDomains() : setupAquaticDomains();
+    this.domains = setupDomains();
   }
 
-  private static Path determineTypeDirectory(Path root) {
-    Path data = root.resolve("data");
-    return Files.isDirectory(data) ? data : root;
-  }
-
-  private Set<String> setupOldDomains() {
+  private Set<String> setupDomains() {
     // (optional) data/type/modid/path
-    try (Stream<Path> stream = Files.list(typeRoot)) {
-      return stream.filter(Files::isDirectory).flatMap(file -> {
-        try {
-          return Files.list(file);
-        } catch (IOException ex) {
-          throw new UncheckedIOException(ex);
-        }
-      }).map(Path::getFileName).map(Path::toString).collect(ImmutableSet.toImmutableSet());
+    try {
+      return format.setupDomains(typeRoot);
     } catch (IOException | UncheckedIOException ex) {
-      LOGGER.error("I/O error loading 1.12 format domains in data pack {}", name, ex);
-      return Collections.emptySet();
-    }
-  }
-
-  private Set<String> setupAquaticDomains() {
-    // data/modid/type/path
-    try (Stream<Path> stream = Files.list(typeRoot.resolve("data"))) {
-      return stream.filter(Files::isDirectory).map(Path::getFileName).map(Path::toString).collect(ImmutableSet.toImmutableSet());
-    } catch (IOException | UncheckedIOException ex) {
-      LOGGER.error("I/O error loading 1.13 format domains in data pack {}", name, ex);
+      LOGGER.error("I/O error loading {} format domains in data pack {}", format, name, ex);
       return Collections.emptySet();
     }
   }
 
   @Override
   public IData get(String type) {
-    return dataMap.computeIfAbsent(type, key -> new FileData(this, typeRoot, key, old));
+    return dataMap.computeIfAbsent(type, key -> new FileData(this, typeRoot, key, format));
   }
 
   @Override
@@ -89,5 +66,14 @@ class FileDataPack implements IDataPack {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("name", name)
+        .add("directory", directory)
+        .add("type root", typeRoot)
+        .add("format", format).toString();
   }
 }

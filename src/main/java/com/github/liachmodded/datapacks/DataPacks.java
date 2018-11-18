@@ -96,8 +96,7 @@ public final class DataPacks {
               if (!location.getPath().isEmpty()) {
                 toFill.computeIfAbsent(location, loc -> FunctionObject.create(functionManager, Arrays.asList(content.get().split("\\r?\\n"))));
               }
-            }
-            )
+            })
         );
   }
 

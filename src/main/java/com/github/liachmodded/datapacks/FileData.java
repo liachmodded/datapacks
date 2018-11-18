@@ -29,19 +29,19 @@ class FileData implements IData {
   private final FileDataPack pack;
   private final Path typeDirectory;
   private final String type;
-  private final boolean old;
+  private final PackFormat format;
 
-  FileData(FileDataPack pack, Path typeDirectory, String type, boolean old) {
+  FileData(FileDataPack pack, Path typeDirectory, String type, PackFormat format) {
     this.pack = pack;
     this.typeDirectory = typeDirectory;
     this.type = type;
-    this.old = old;
+    this.format = format;
   }
 
   private Path locateDomain(String domain) {
     // 1.12: advancements/minecraft/...
     // 1.13: minecraft/advancements/...
-    return old ? typeDirectory.resolve(type).resolve(domain) : typeDirectory.resolve(domain).resolve(type);
+    return format.locateDomain(typeDirectory, type, domain);
   }
 
   private Path path(ResourceLocation location) {
@@ -83,7 +83,7 @@ class FileData implements IData {
                       }
                   );
                 } catch (UncheckedIOException ex) {
-                  LOGGER.error("Error retrieving content of content of type {} at {}, skipping", type, location, ex);
+                  LOGGER.error("Error retrieving content of content of type {} at {}, skipping", type, location, ex.getCause());
                 }
               });
         } catch (IOException ex) {

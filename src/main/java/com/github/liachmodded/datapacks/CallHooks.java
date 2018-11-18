@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 @SuppressWarnings("unused")
 public final class CallHooks {
 
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private CallHooks() {
   }
@@ -34,7 +34,7 @@ public final class CallHooks {
    * @param functions the functions map in the function manager
    */
   public static void loadMainFunctions(FunctionManager functionManager, Map<ResourceLocation, FunctionObject> functions) {
-    logger.info("loadMainFunctions called!");
+    LOGGER.debug("loadMainFunctions called!");
     DataPacks.getInstance().fillFunctions(functionManager, functions);
   }
 
@@ -44,7 +44,7 @@ public final class CallHooks {
    * @param toFill the map to fill
    */
   public static void loadMainAdvancements(Map<ResourceLocation, Advancement.Builder> toFill) {
-    logger.info("loadMainAdvancements called!");
+    LOGGER.debug("loadMainAdvancements called!");
     DataPacks.getInstance().fillAdvancements(toFill);
   }
 
@@ -57,6 +57,7 @@ public final class CallHooks {
    */
   @Nullable
   public static LootTable loadMainLootTable(LootTableManager manager, ResourceLocation location, Gson gson) {
+    LOGGER.debug("loadMainAdvancements called!");
     return DataPacks.getInstance().getLootTable(manager, location, gson);
   }
 }

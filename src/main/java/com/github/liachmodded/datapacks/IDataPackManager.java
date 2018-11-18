@@ -8,6 +8,8 @@ import java.util.Set;
  */
 public interface IDataPackManager {
 
+  void addDataType(String type);
+
   Set<IDataPack> getAll();
 
   List<IDataPack> getEnabled();
