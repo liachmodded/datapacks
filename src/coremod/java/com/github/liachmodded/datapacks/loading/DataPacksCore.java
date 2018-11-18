@@ -2,6 +2,9 @@ package com.github.liachmodded.datapacks.loading;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.util.Map;
 
@@ -13,10 +16,11 @@ import javax.annotation.Nullable;
 @IFMLLoadingPlugin.Name("Data Packs Core Mod")
 public class DataPacksCore implements IFMLLoadingPlugin {
 
+  public static final Logger LOGGER = LogManager.getLogger("Data Packs Core Mod");
   static boolean searge = false;
 
   public DataPacksCore() {
-    System.out.println("Datapacks core loaded");
+    LOGGER.info("Datapacks core loaded");
   }
 
   @Override
@@ -43,7 +47,7 @@ public class DataPacksCore implements IFMLLoadingPlugin {
   public void injectData(Map<String, Object> data) {
     DataPacksCore.searge = (Boolean) data.get("runtimeDeobfuscationEnabled");
     File mcDir = (File) data.get("mcLocation");
-    System.setProperty("datapacks.gamedirectory", mcDir.getAbsolutePath());
+    System.setProperty("datapacks.gamedirectory", mcDir.toPath().toAbsolutePath().toString());
   }
 
   @Override

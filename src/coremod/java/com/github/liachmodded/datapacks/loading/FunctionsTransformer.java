@@ -35,7 +35,7 @@ public class FunctionsTransformer implements IClassTransformer {
         list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/github/liachmodded/datapacks/CallHooks", "loadMainFunctions", "(Lnet/minecraft/advancements/FunctionManager;Ljava/util/Map;)V", false));
         methodNode.instructions.insert(list);
 
-        System.out.println("Inserted call to function manager");
+        DataPacksCore.LOGGER.info("Inserted call to function manager");
         break;
       }
     }

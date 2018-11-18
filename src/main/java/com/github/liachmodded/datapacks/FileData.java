@@ -1,55 +1,62 @@
 package com.github.liachmodded.datapacks;
 
+import com.google.common.io.MoreFiles;
+
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  *
  */
-public class FileData implements IData {
+class FileData implements IData {
 
+  private static final Logger LOGGER = LogManager.getLogger();
   private final FileDataPack pack;
-  private final File typeDirectory;
-  private final String key;
+  private final Path typeDirectory;
+  private final String type;
   private final boolean old;
 
-  FileData(FileDataPack pack, File typeDirectory, String key, boolean old) {
+  FileData(FileDataPack pack, Path typeDirectory, String type, boolean old) {
     this.pack = pack;
     this.typeDirectory = typeDirectory;
-    this.key = key;
+    this.type = type;
     this.old = old;
   }
 
-  private File locateDomain(String domain) {
+  private Path locateDomain(String domain) {
     // 1.12: advancements/minecraft/...
     // 1.13: minecraft/advancements/...
-    return new File(typeDirectory, old ?
-        key + File.separator + domain + File.separator :
-        domain + File.separator + key + File.separator);
+    return old ? typeDirectory.resolve(type).resolve(domain) : typeDirectory.resolve(domain).resolve(type);
   }
 
-  private File locate(ResourceLocation location) {
-    return new File(locateDomain(location.getNamespace()), location.getPath().replace('/', File.separatorChar));
+  private Path path(ResourceLocation location) {
+    Path domain = locateDomain(location.getNamespace());
+    return domain.resolve(domain.getFileSystem().getPath("", location.getPath().split("/")));
   }
 
   @Override
   public String getContent(ResourceLocation location) throws IOException {
-    return FileUtils.readFileToString(locate(location), StandardCharsets.UTF_8);
+    return new String(Files.readAllBytes(path(location)), StandardCharsets.UTF_8);
   }
 
   @Override
   public boolean has(ResourceLocation location) {
-    return locate(location).exists();
+    return Files.exists(path(location));
   }
 
   @Override
@@ -60,18 +67,34 @@ public class FileData implements IData {
   @Override
   public void forEachContent(String suffix, BiConsumer<ResourceLocation, Supplier<String>> consumer) {
     for (String domain : getDomains()) {
-      File base = locateDomain(domain);
-      if (base.exists()) {
-        for (File f : FileUtils.listFiles(base, new String[]{suffix}, true)) {
-          consumer.accept(new ResourceLocation(domain, FilenameUtils.removeExtension(base.toPath().relativize(f.toPath()).toString()).replace('\\', '/')), () -> {
-            try {
-              return FileUtils.readFileToString(f, StandardCharsets.UTF_8);
-            } catch (IOException ex) {
-              throw new UncheckedIOException(ex);
-            }
-          });
+      Path domainPath = locateDomain(domain);
+      if (Files.exists(domainPath)) {
+        try (Stream<Path> stream = Files.walk(domainPath)) {
+          stream.filter(path -> MoreFiles.getFileExtension(path).equals(suffix))
+              .forEach(path -> {
+                ResourceLocation location = key(domain, domainPath, path);
+                try {
+                  consumer.accept(location, () -> {
+                        try {
+                          return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                        } catch (IOException ex) {
+                          throw new UncheckedIOException(ex);
+                        }
+                      }
+                  );
+                } catch (UncheckedIOException ex) {
+                  LOGGER.error("Error retrieving content of content of type {} at {}, skipping", type, location, ex);
+                }
+              });
+        } catch (IOException ex) {
+          throw new UncheckedIOException(ex);
         }
       }
     }
+  }
+
+  private ResourceLocation key(String domain, Path domainPath, Path current) {
+    String name = StreamSupport.stream(current.relativize(domainPath).spliterator(), false).map(Path::toString).collect(Collectors.joining("/"));
+    return new ResourceLocation(domain, FilenameUtils.removeExtension(name));
   }
 }

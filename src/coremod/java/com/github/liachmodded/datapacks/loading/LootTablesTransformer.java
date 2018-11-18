@@ -71,7 +71,7 @@ public class LootTablesTransformer implements IClassTransformer {
         // stack:
         methodNode.instructions.insert(list);
 
-        System.out.println("Inserted call to loot table manager loader");
+        DataPacksCore.LOGGER.info("Inserted call to loot table manager loader");
         break;
       }
     }

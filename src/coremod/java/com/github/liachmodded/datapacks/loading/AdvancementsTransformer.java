@@ -31,7 +31,7 @@ public class AdvancementsTransformer implements IClassTransformer {
         list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/github/liachmodded/datapacks/CallHooks", "loadMainAdvancements", "(Ljava/util/Map;)V", false));
         methodNode.instructions.insert(list);
 
-        System.out.println("Inserted call to advancement manager");
+        DataPacksCore.LOGGER.info("Inserted call to advancement manager");
         break;
       }
     }

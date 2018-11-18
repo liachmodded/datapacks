@@ -16,11 +16,15 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
-import java.io.File;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -36,10 +40,11 @@ import javax.annotation.Nullable;
 )
 public final class DataPacks {
   public static final String ID = "datapacks";
+  public static final Logger LOGGER = LogManager.getLogger(ID);
   private static final DataPacks INSTANCE = new DataPacks();
-  private final File mcDir;
+  private final Path mcDir;
   private boolean hasInit = false;
-  private DataPackManager manager;
+  private IDataPackManager manager;
 
   public static ResourceLocation locate(String path) {
     return new ResourceLocation(ID, path);
@@ -51,7 +56,7 @@ public final class DataPacks {
   }
 
   private DataPacks() {
-    mcDir = new File(System.getProperty("datapacks.gamedirectory"));
+    mcDir = FileSystems.getDefault().getPath(System.getProperty("datapacks.gamedirectory"));
     System.clearProperty("datapacks.gamedirectory");
   }
 
@@ -62,14 +67,14 @@ public final class DataPacks {
     }
     return this.manager.getEnabled()
         .stream()
-        .map(pack -> {
+        .flatMap(pack -> {
           try {
-            return pack.get("loot_tables").getContent(location);
+            return Stream.of(pack.get("loot_tables").getContent(location));
           } catch (IOException ex) {
-            return null;
+            LOGGER.error("Error loading loot table at {}", location, ex);
+            return Stream.empty();
           }
         })
-        .filter(Objects::nonNull)
         .findFirst()
         .map(st -> ForgeHooks.loadLootTable(gson, location, st, true, manager))
         .orElse(null);
@@ -98,7 +103,7 @@ public final class DataPacks {
 
   @Mod.EventHandler
   public void init(FMLInitializationEvent event) {
-    manager = new DataPackManager(new File(mcDir, "datapacks"));
+    manager = new DataPackManager(mcDir.resolve("datapacks"));
     hasInit = true;
   }
 
@@ -109,6 +114,5 @@ public final class DataPacks {
 
   @Mod.EventHandler
   public void onServerStart(FMLServerStartingEvent event) {
-
   }
 }
