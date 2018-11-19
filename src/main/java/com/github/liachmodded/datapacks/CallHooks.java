@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
- * A call hook for the transformer.
+ * A name hook for the transformer.
  */
 @SuppressWarnings("unused")
 public final class CallHooks {
@@ -57,7 +57,7 @@ public final class CallHooks {
    */
   @Nullable
   public static LootTable loadMainLootTable(LootTableManager manager, ResourceLocation location, Gson gson) {
-    LOGGER.debug("loadMainAdvancements called!");
+    LOGGER.debug("loadMainLootTable called!");
     return DataPacks.getInstance().getLootTable(manager, location, gson);
   }
 }

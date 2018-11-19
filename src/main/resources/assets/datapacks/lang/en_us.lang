@@ -1,0 +1,19 @@
+command.datapacks.subcommand.info=%1$s : %2$s
+command.datapacks.subcommand.begin=These are available sub-commands:
+command.datapacks.subcommand.end=End the list of sub-commands.
+command.datapacks.subcommand.entry=  - %1$s : %2$s
+
+command.datapacks.datapack.desc=The root command for data pack management.
+command.datapacks.datapack.usage=/datapack <disable|enable|list>
+command.datapacks.datapack.disable.desc=Disables a data pack.
+command.datapacks.datapack.disable.error=%s is not a data pack.
+command.datapacks.datapack.disable.usage=/datapack disable <name>
+command.datapacks.datapack.enable.desc=Enables a data pack and defines its load order.
+command.datapacks.datapack.enable.usage=/datapack enable <name> [first|last|before|after]
+command.datapacks.datapack.enable.usage.extreme=/datapack enable <name> [first|last]
+command.datapacks.datapack.enable.usage.rank=/datapack enable <name> [before|after] <existing>
+command.datapacks.datapack.list.desc=List the data packs available or enabled packs.
+command.datapacks.datapack.list.usage=/datapack list [available|enabled]
+command.datapacks.datapack.list.title.available=List of data packs:
+command.datapacks.datapack.list.title.enabled=List of data packs:
+command.datapacks.datapack.list.each=  - %s

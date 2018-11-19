@@ -2,19 +2,32 @@ package com.github.liachmodded.datapacks;
 
 import com.google.gson.Gson;
 
+import com.github.liachmodded.datapacks.client.Reloader;
+import com.github.liachmodded.datapacks.command.DataPackCommand;
+
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementManager;
 import net.minecraft.advancements.FunctionManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.command.FunctionObject;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,6 +71,10 @@ public final class DataPacks {
   private DataPacks() {
     mcDir = FileSystems.getDefault().getPath(System.getProperty("datapacks.gamedirectory"));
     System.clearProperty("datapacks.gamedirectory");
+  }
+
+  public IDataPackManager getManager() {
+    return manager;
   }
 
   @Nullable
@@ -107,6 +124,15 @@ public final class DataPacks {
   public void init(FMLInitializationEvent event) {
     manager = new DataPackManager(mcDir.resolve("datapacks"));
     hasInit = true;
+    MinecraftForge.EVENT_BUS.register(this);
+    if (FMLCommonHandler.instance().getSide().isClient()) {
+      handleClient();
+    }
+  }
+
+  @SideOnly(Side.CLIENT)
+  private void handleClient() {
+    ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new Reloader(manager));
   }
 
   @Mod.EventHandler
@@ -115,6 +141,19 @@ public final class DataPacks {
   }
 
   @Mod.EventHandler
-  public void onServerStart(FMLServerStartingEvent event) {
+  public void onServerStarting(FMLServerStartingEvent event) {
+    event.registerServerCommand(new DataPackCommand(manager));
+  }
+
+  @SubscribeEvent
+  public void onReloadCommand(CommandEvent event) {
+    FMLClientHandler.instance().refreshResources();
+    if (!event.getCommand().getName().equals("reload")) {
+      return;
+    }
+    MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+    if (server != null && server.isCallingFromMinecraftThread()) {
+      manager.rescan();
+    }
   }
 }
