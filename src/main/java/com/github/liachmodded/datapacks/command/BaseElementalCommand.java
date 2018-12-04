@@ -21,7 +21,7 @@ public abstract class BaseElementalCommand extends CommandBase implements IEleme
 
   @Override
   public String getUsage(ICommandSender sender) {
-    return "commands.datapacks." + fullName.replace(' ', '.') + ".usage";
+    return "command.datapacks." + fullName.replace(' ', '.') + ".usage";
   }
 
   @Override

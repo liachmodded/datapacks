@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FunctionManager;
 import net.minecraft.command.FunctionObject;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableManager;
@@ -31,7 +32,7 @@ public final class CallHooks {
    * {@link net.minecraft.advancements.FunctionManager#loadFunctions()}
    *
    * @param functionManager the function manager
-   * @param functions the functions map in the function manager
+   * @param functions       the functions map in the function manager
    */
   public static void loadMainFunctions(FunctionManager functionManager, Map<ResourceLocation, FunctionObject> functions) {
     LOGGER.debug("loadMainFunctions called!");
@@ -53,11 +54,23 @@ public final class CallHooks {
    *
    * @param manager  the loot table manager
    * @param location the resource location
-   * @param gson the gson
+   * @param gson     the gson
    */
   @Nullable
   public static LootTable loadMainLootTable(LootTableManager manager, ResourceLocation location, Gson gson) {
     LOGGER.debug("loadMainLootTable called!");
     return DataPacks.getInstance().getLootTable(manager, location, gson);
+  }
+
+  /**
+   * {@link MinecraftServer#reload()}
+   * Injected after {@link net.minecraft.server.management.PlayerList#saveAllPlayerData} call.
+   * This is called before advancements and loot tables are reloaded.
+   *
+   * @param minecraftServer the minecraft server instance
+   */
+  public static void onServerReload(MinecraftServer minecraftServer) {
+    LOGGER.debug("onServerReload called!");
+    DataPacks.getInstance().getManager().rescan();
   }
 }

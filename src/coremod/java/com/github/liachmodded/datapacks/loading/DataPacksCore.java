@@ -28,7 +28,8 @@ public class DataPacksCore implements IFMLLoadingPlugin {
     return new String[] {
         "com.github.liachmodded.datapacks.loading.AdvancementsTransformer",
         "com.github.liachmodded.datapacks.loading.LootTablesTransformer",
-        "com.github.liachmodded.datapacks.loading.FunctionsTransformer"
+        "com.github.liachmodded.datapacks.loading.FunctionsTransformer",
+        "com.github.liachmodded.datapacks.loading.MinecraftServerTransformer"
     };
   }
 

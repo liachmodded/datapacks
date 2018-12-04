@@ -29,7 +29,7 @@ public class ConfigGui implements IModGuiFactory {
   @Override
   @Nullable
   public GuiScreen createConfigGui(GuiScreen parentScreen) {
-    return null;
+    return null; // TODO add gui
   }
 
   @Override

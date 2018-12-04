@@ -6,6 +6,12 @@ import com.github.liachmodded.datapacks.IDataPackManager;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -26,6 +32,19 @@ class DisableCommand extends BaseElementalCommand {
   @Override
   public int getRequiredPermissionLevel() {
     return 3;
+  }
+
+  @Override
+  public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    if (args.length == 1) {
+      return getListOfStringsMatchingLastWord(args, manager.getEnabled()
+          .stream()
+          .map(IDataPack::getName)
+          .sorted()
+          .collect(Collectors.toList())
+      );
+    }
+    return super.getTabCompletions(server, sender, args, targetPos);
   }
 
   @Override

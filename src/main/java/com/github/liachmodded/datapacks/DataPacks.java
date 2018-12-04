@@ -11,21 +11,16 @@ import net.minecraft.advancements.FunctionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.command.FunctionObject;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -103,10 +98,9 @@ public final class DataPacks {
   public void fillAdvancements(Map<ResourceLocation, Advancement.Builder> toFill) {
     manager.getEnabled()
         .forEach(pack -> pack.get("advancements").forEachContent("json", (location, content) -> {
-              System.out.println("Loading advancement at " + location);
+              LOGGER.debug("Loading advancement at " + location);
               toFill.computeIfAbsent(location, loc -> JsonUtils.fromJson(AdvancementManager.GSON, content.get(), Advancement.Builder.class, false));
-            }
-            )
+            })
         );
   }
 
@@ -124,7 +118,6 @@ public final class DataPacks {
   public void init(FMLInitializationEvent event) {
     manager = new DataPackManager(mcDir.resolve("datapacks"));
     hasInit = true;
-    MinecraftForge.EVENT_BUS.register(this);
     if (FMLCommonHandler.instance().getSide().isClient()) {
       handleClient();
     }
@@ -143,17 +136,5 @@ public final class DataPacks {
   @Mod.EventHandler
   public void onServerStarting(FMLServerStartingEvent event) {
     event.registerServerCommand(new DataPackCommand(manager));
-  }
-
-  @SubscribeEvent
-  public void onReloadCommand(CommandEvent event) {
-    FMLClientHandler.instance().refreshResources();
-    if (!event.getCommand().getName().equals("reload")) {
-      return;
-    }
-    MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-    if (server != null && server.isCallingFromMinecraftThread()) {
-      manager.rescan();
-    }
   }
 }

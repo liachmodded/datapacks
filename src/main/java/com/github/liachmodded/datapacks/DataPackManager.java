@@ -37,6 +37,7 @@ class DataPackManager implements IDataPackManager {
       (Files.isRegularFile(path) && MoreFiles.getFileExtension(path).equals("zip")) ||
           Files.isDirectory(path) && Files.isRegularFile(path.resolve("pack.mcmeta"));
   private static final Logger LOGGER = LogManager.getLogger();
+  // TODO better way to store disabled status, etc.
   private static final String DISABLED_SEPARATOR = ":::DISABLED:::";
   private final Set<String> testTypes = Sets.newHashSet("advancements", "loot_tables", "functions");
   private final Path directory;
@@ -219,12 +220,14 @@ class DataPackManager implements IDataPackManager {
     Path meta = each.resolve("pack.mcmeta");
     if (Files.isRegularFile(meta)) {
       ITextComponent text;
-      Boolean old = null;
+      Boolean old = null; // require old version
       try {
         String json = new String(Files.readAllBytes(meta), StandardCharsets.UTF_8);
         JsonObject jsonObject = JsonUtils.getJsonObject(new JsonParser().parse(json), "");
         JsonObject packObject = JsonUtils.getJsonObject(jsonObject, "pack");
-        old = JsonUtils.getBoolean(packObject, "old");
+        if (JsonUtils.hasField(packObject, "old")) {
+          old = JsonUtils.getBoolean(packObject, "old");
+        }
         String desc = JsonUtils.getString(packObject, "description");
         text = new TextComponentString(desc);
       } catch (IOException | IllegalStateException | JsonSyntaxException | UncheckedIOException ex) {

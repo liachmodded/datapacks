@@ -7,6 +7,12 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -21,6 +27,35 @@ class EnableCommand extends BaseElementalCommand {
   @Override
   public String getName() {
     return "enable";
+  }
+
+  @Override
+  public int getRequiredPermissionLevel() {
+    return 3;
+  }
+
+  @Override
+  public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    if (args.length == 1) {
+      return getListOfStringsMatchingLastWord(args, manager.getAll()
+          .stream()
+          .map(IDataPack::getName)
+          .sorted()
+          .collect(Collectors.toList())
+      );
+    }
+    if (args.length == 2) {
+      return getListOfStringsMatchingLastWord(args, "first", "last", "before", "after");
+    }
+    if (args.length == 3 && ("before".equals(args[1]) || "after".equals(args[1]))) {
+      return getListOfStringsMatchingLastWord(args, manager.getEnabled()
+          .stream()
+          .map(IDataPack::getName)
+          .sorted()
+          .collect(Collectors.toList())
+      );
+    }
+    return super.getTabCompletions(server, sender, args, targetPos);
   }
 
   @Override

@@ -6,11 +6,15 @@ import com.github.liachmodded.datapacks.IDataPackManager;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.event.HoverEvent;
 
 import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -34,6 +38,14 @@ class ListCommand extends BaseElementalCommand {
   }
 
   @Override
+  public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    if (args.length == 1) {
+      return getListOfStringsMatchingLastWord(args, "available", "enabled");
+    }
+    return super.getTabCompletions(server, sender, args, targetPos);
+  }
+
+  @Override
   public void execute(MinecraftServer server, ICommandSender sender, String... args) throws CommandException {
     if (args.length != 1) {
       onWrongUsage(sender);
@@ -51,7 +63,9 @@ class ListCommand extends BaseElementalCommand {
   private void printAbout(String beginning, ICommandSender sender, Collection<IDataPack> packs) {
     sender.sendMessage(new TextComponentTranslation(beginning));
     for (IDataPack pack : packs) {
-      sender.sendMessage(new TextComponentTranslation("command.datapacks.datapack.list.each", pack.getName()).setStyle(new Style().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, pack.getDescription()))));
+      sender.sendMessage(new TextComponentTranslation("command.datapacks.datapack.list.each", pack.getName()).setStyle(new Style().setHoverEvent(
+          new HoverEvent(HoverEvent.Action.SHOW_TEXT, pack.getDescription())
+      )));
     }
   }
 }

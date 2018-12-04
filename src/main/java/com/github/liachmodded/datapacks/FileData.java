@@ -56,6 +56,11 @@ class FileData implements IData {
   }
 
   @Override
+  public Path getPath(ResourceLocation location, String suffix) {
+    return path(location, suffix);
+  }
+
+  @Override
   public boolean has(ResourceLocation location, String suffix) {
     return Files.exists(path(location, suffix));
   }
