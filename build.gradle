@@ -9,7 +9,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "0.2"
+version = "0.3"
 group = "com.github.liachmodded"
 archivesBaseName = "datapacks"
 

@@ -2,10 +2,10 @@
   {
     "modid": "datapacks",
     "name": "Data Packs Helper",
-    "description": "A mod that makes data (advancements and loot tables) access easier.",
+    "description": "Applies data (advancement, loot table, etc.) across saves and in newly created worlds.",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://github.com/liachmodded/datapacks",
+    "url": "https://minecraft.curseforge.com/projects/data-packs-helper",
     "updateUrl": "",
     "authorList": [
       "liach"
