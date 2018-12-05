@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- *
+ * The folder structure of the data pack.
  */
 enum PackFormat {
   // NEW
@@ -22,9 +22,11 @@ enum PackFormat {
     }
 
     @Override
-    Set<String> setupDomains(Path root) throws IOException, UncheckedIOException {
+    Set<String> setupDomains(Path root) throws IOException {
       try (Stream<Path> stream = Files.list(root)) {
         return stream.filter(Files::isDirectory).map(PackFormat::removeDash).collect(ImmutableSet.toImmutableSet());
+      } catch (UncheckedIOException ex) {
+        throw ex.getCause();
       }
     }
   },
@@ -34,7 +36,7 @@ enum PackFormat {
     @Override
     Path getTypeRoot(Path pack) {
       Path data = pack.resolve("data");
-      return Files.exists(data) ? data : pack;
+      return Files.isDirectory(data) ? data : pack;
     }
 
     @Override
@@ -43,7 +45,7 @@ enum PackFormat {
     }
 
     @Override
-    Set<String> setupDomains(Path root) throws IOException, UncheckedIOException {
+    Set<String> setupDomains(Path root) throws IOException {
       try (Stream<Path> stream = Files.list(root)) {
         return stream.filter(Files::isDirectory).flatMap(file -> {
           try {
@@ -52,6 +54,8 @@ enum PackFormat {
             throw new UncheckedIOException(ex);
           }
         }).map(Path::getFileName).map(PackFormat::removeDash).collect(ImmutableSet.toImmutableSet());
+      } catch (UncheckedIOException ex) {
+        throw ex.getCause();
       }
     }
   },
@@ -64,7 +68,7 @@ enum PackFormat {
     }
 
     @Override
-    Set<String> setupDomains(Path root) throws IOException, UncheckedIOException {
+    Set<String> setupDomains(Path root) throws IOException {
       return ImmutableSet.<String>builder().addAll(NAMESPACE_TYPE.setupDomains(root)).addAll(TYPE_NAMESPACE.setupDomains(root)).build();
     }
   };
@@ -75,7 +79,7 @@ enum PackFormat {
 
   abstract Path locateDomain(Path root, String type, String domain);
 
-  abstract Set<String> setupDomains(Path root) throws IOException, UncheckedIOException;
+  abstract Set<String> setupDomains(Path root) throws IOException;
 
   // Zip freaks out!
   static String removeDash(Path path) {

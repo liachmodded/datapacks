@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- *
+ * A data based on file systems.
  */
 class FileData implements IData {
 

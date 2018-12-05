@@ -6,16 +6,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
- *
+ * Manages data packs in addition to providing them.
  */
-public interface IDataPackManager {
-
-  void addDataType(String type);
-
-  Set<IDataPack> getAll();
-
-  @Nullable
-  IDataPack getByName(String name);
+public interface IDataPackManager extends IDataPackProvider {
 
   List<IDataPack> getEnabled();
 
@@ -30,8 +23,6 @@ public interface IDataPackManager {
   void putAfter(IDataPack pack, IDataPack old);
 
   void putLast(IDataPack pack);
-
-  void rescan();
 
   void saveOrder();
 }

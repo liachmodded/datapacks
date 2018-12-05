@@ -8,7 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * A data pack based on file systems.
  */
 class FileDataPack implements IDataPack {
 
@@ -42,7 +41,7 @@ class FileDataPack implements IDataPack {
     // (optional) data/type/modid/path
     try {
       return format.setupDomains(typeRoot);
-    } catch (IOException | UncheckedIOException ex) {
+    } catch (IOException ex) {
       LOGGER.error("I/O error loading {} format domains in data pack {}", format, name, ex);
       return Collections.emptySet();
     }

@@ -11,6 +11,7 @@ import net.minecraft.advancements.FunctionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.command.FunctionObject;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTable;
@@ -21,6 +22,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -48,11 +50,15 @@ import javax.annotation.Nullable;
 )
 public final class DataPacks {
   public static final String ID = "datapacks";
+  public static final String PACK_DIRECTORY = "datapacks";
+  public static final String DATA_DIRECTORY = "data";
   public static final Logger LOGGER = LogManager.getLogger(ID);
   private static final DataPacks INSTANCE = new DataPacks();
   private final Path mcDir;
   private boolean hasInit = false;
-  private IDataPackManager manager;
+  private Path datapacksDir;
+  private IDataPackProvider perWorldProvider;
+  private DelegateDataPackManager manager;
 
   public static ResourceLocation locate(String path) {
     return new ResourceLocation(ID, path);
@@ -116,7 +122,10 @@ public final class DataPacks {
 
   @Mod.EventHandler
   public void init(FMLInitializationEvent event) {
-    manager = new DataPackManager(mcDir.resolve("datapacks"));
+    datapacksDir = mcDir.resolve(PACK_DIRECTORY);
+    IDataPackProvider datapacksFolderProvider = new DataPackProvider(datapacksDir);
+    IDataPackProvider dataFolderProvider = new StandaloneDataProvider(mcDir.resolve(DATA_DIRECTORY));
+    manager = new DelegateDataPackManager(datapacksDir, dataFolderProvider, datapacksFolderProvider);
     hasInit = true;
     if (FMLCommonHandler.instance().getSide().isClient()) {
       handleClient();
@@ -130,11 +139,26 @@ public final class DataPacks {
 
   @Mod.EventHandler
   public void beforeServerStart(FMLServerAboutToStartEvent event) {
+    MinecraftServer server = event.getServer();
+    Path packDirectory = server.getDataDirectory().toPath().resolve(server.getFolderName()).resolve(PACK_DIRECTORY);
+    perWorldProvider = new DataPackProvider(packDirectory);
+    manager.saveOrder();
+    manager.getProviders().add(0, perWorldProvider);
+    manager.setOrderLocation(packDirectory);
     manager.rescan();
   }
 
   @Mod.EventHandler
   public void onServerStarting(FMLServerStartingEvent event) {
     event.registerServerCommand(new DataPackCommand(manager));
+  }
+
+  @Mod.EventHandler
+  public void onServerStop(FMLServerStoppingEvent event) {
+    manager.saveOrder();
+    manager.getProviders().remove(this.perWorldProvider);
+    manager.setOrderLocation(datapacksDir);
+    manager.rescan();
+    this.perWorldProvider = null;
   }
 }
