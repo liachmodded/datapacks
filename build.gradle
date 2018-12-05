@@ -2,12 +2,15 @@ buildscript {
     repositories {
         jcenter()
         maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = "https://plugins.gradle.org/m2" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "gradle.plugin.net.minecrell:licenser:0.4.1"
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecrell.licenser'
 
 version = "0.3"
 group = "com.github.liachmodded"
@@ -31,6 +34,14 @@ minecraft {
     coreMod = project.coreMod
     makeObfSourceJar = false
     // an Srg named sources jar is made by default. uncomment this to disable.
+}
+
+license {
+    header = project.file('gradle/header.txt')
+    newLine false
+    style.java = 'BLOCK_COMMENT'
+
+    include '**/*.java'
 }
 
 sourceSets {
