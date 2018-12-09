@@ -7,14 +7,15 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.net.minecrell:licenser:0.4.1"
-        classpath 'com.novoda:bintray-release:0.9-SNAPSHOT'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'net.minecrell.licenser'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
-version = "0.3"
+version = "0.3.1"
 group = "com.github.liachmodded"
 archivesBaseName = "datapacks"
 description = "Applies data (advancement, loot table, etc.) across saves and in newly created worlds."
@@ -46,13 +47,27 @@ license {
     include '**/*.java'
 }
 
-publish {
-    userOrg = 'liachmodded'
-    groupId = project.group
-    artifactId = project.archiveBaseName
-    publishVersion = project.version
-    desc = project.description
-    website = 'https://github.com/liachmodded/datapacks'
+bintray {
+    user = project.property("bintrayuser")
+    key = project.property("bintraykey")
+    pkg {
+        repo = 'datapacks'
+        name = 'datapacks'
+        userOrg = 'liachmodded'
+        licenses = ['MPL-2.0']
+        vcsUrl = 'https://github.com/liachmodded/datapacks'
+    }
+}
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId project.group
+            artifactId 'datapacks'
+            version project.version
+        }
+    }
 }
 
 sourceSets {
@@ -108,7 +123,7 @@ jar {
     }
 }
 
-tasks.getByName("jar").dependsOn tasks.getByName("coreModJar")
+tasks.jar.dependsOn tasks.coreModJar
 
 runClient.outputs.upToDateWhen { false }
 runServer.outputs.upToDateWhen { false }
