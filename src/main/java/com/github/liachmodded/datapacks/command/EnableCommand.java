@@ -81,8 +81,10 @@ class EnableCommand extends BaseElementalCommand {
       }
       if (arg.equals("first")) {
         manager.putFirst(pack);
+        notifyCommandListener(sender, this, "command.datapacks.datapack.enable.first.success", pack.getName());
       } else {
         manager.putLast(pack);
+        notifyCommandListener(sender, this, "command.datapacks.datapack.enable.last.success", pack.getName());
       }
     } else if (arg.equals("before") || arg.equals("after")) {
       if (args.length != 3) {
@@ -94,8 +96,10 @@ class EnableCommand extends BaseElementalCommand {
       }
       if (arg.equals("before")) {
         manager.putBefore(pack, goal);
+        notifyCommandListener(sender, this, "command.datapacks.datapack.enable.before.success", pack.getName(), goal.getName());
       } else {
         manager.putAfter(pack, goal);
+        notifyCommandListener(sender, this, "command.datapacks.datapack.enable.after.success", pack.getName(), goal.getName());
       }
     } else {
       onWrongUsage(sender);

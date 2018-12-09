@@ -1,0 +1,24 @@
+command.datapacks.subcommand.info=%1$s：%2$s
+command.datapacks.subcommand.begin=可用附属指令：
+command.datapacks.subcommand.end=以上是全部附属指令。
+command.datapacks.subcommand.entry=  - %1$s：%2$s
+
+command.datapacks.datapack.desc=数据管理的基本指令。
+command.datapacks.datapack.usage=/datapack <disable|enable|list>
+command.datapacks.datapack.disable.desc=禁用一个数据包。
+command.datapacks.datapack.disable.error=找不到名为 %s 的数据包。
+command.datapacks.datapack.disable.success=已禁用 %s 数据包。
+command.datapacks.datapack.disable.usage=/datapack disable <数据包名称>
+command.datapacks.datapack.enable.desc=启用数据包并定义其优先级。
+command.datapacks.datapack.enable.after.success=已成功设置在 %2$s 后读取 %1$s 数据包。
+command.datapacks.datapack.enable.before.success=已成功设置在 %2$s 前读取 %1$s 数据包。
+command.datapacks.datapack.enable.first.success=已成功设置首先读取 %s 数据包。
+command.datapacks.datapack.enable.last.success=已成功设置最后读取 %s 数据包。
+command.datapacks.datapack.enable.usage=/datapack enable <数据包名称> [first|last|before|after]
+command.datapacks.datapack.enable.usage.extreme=/datapack enable <数据包名称> [first|last]
+command.datapacks.datapack.enable.usage.rank=/datapack enable <要读取的数据包的名称> [before|after] <已读取的数据包的名称>
+command.datapacks.datapack.list.desc=列举已加载的数据包或全部可用数据包。
+command.datapacks.datapack.list.usage=/datapack list [available|enabled]
+command.datapacks.datapack.list.title.available=全部可用数据包：
+command.datapacks.datapack.list.title.enabled=已加载的数据包：
+command.datapacks.datapack.list.each=  - %s

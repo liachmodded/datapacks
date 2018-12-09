@@ -7,15 +7,17 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.net.minecrell:licenser:0.4.1"
+        classpath 'com.novoda:bintray-release:0.9-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'net.minecrell.licenser'
+apply plugin: 'com.novoda.bintray-release'
 
 version = "0.3"
 group = "com.github.liachmodded"
 archivesBaseName = "datapacks"
-
+description = "Applies data (advancement, loot table, etc.) across saves and in newly created worlds."
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -44,6 +46,15 @@ license {
     include '**/*.java'
 }
 
+publish {
+    userOrg = 'liachmodded'
+    groupId = project.group
+    artifactId = project.archiveBaseName
+    publishVersion = project.version
+    desc = project.description
+    website = 'https://github.com/liachmodded/datapacks'
+}
+
 sourceSets {
     coremod {
         compileClasspath += main.compileClasspath
@@ -63,7 +74,7 @@ processResources {
         include 'mcmod.info'
 
         // replace version and mcversion
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+        expand 'description': project.description, 'version': project.version, 'mcversion': project.minecraft.version
     }
 
     // copy everything else except the mcmod.info
@@ -76,7 +87,6 @@ tasks.withType(Javadoc) {
     // disable the crazy super-strict doclint tool in Java 8
     options.addStringOption('Xdoclint:none', '-quiet')
 }
-
 
 task coreModJar(type: Jar) {
     from sourceSets.coremod.output

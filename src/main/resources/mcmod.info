@@ -2,7 +2,7 @@
   {
     "modid": "datapacks",
     "name": "Data Packs Helper",
-    "description": "Applies data (advancement, loot table, etc.) across saves and in newly created worlds.",
+    "description": "${description}",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "url": "https://minecraft.curseforge.com/projects/data-packs-helper",

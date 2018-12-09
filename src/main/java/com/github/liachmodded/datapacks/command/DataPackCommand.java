@@ -27,5 +27,4 @@ public class DataPackCommand extends DispatchingCommand {
     return "datapack";
   }
 
-
 }
