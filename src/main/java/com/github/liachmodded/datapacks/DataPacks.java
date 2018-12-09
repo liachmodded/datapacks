@@ -4,13 +4,15 @@
  */
 package com.github.liachmodded.datapacks;
 
+import static net.minecraft.advancements.AdvancementManager.GSON;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import com.github.liachmodded.datapacks.client.Reloader;
 import com.github.liachmodded.datapacks.command.DataPackCommand;
 
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementManager;
 import net.minecraft.advancements.FunctionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -60,7 +62,6 @@ public final class DataPacks {
   private static final DataPacks INSTANCE = new DataPacks();
   private final Path mcDir;
   private boolean hasInit = false;
-  private Path datapacksDir;
   private IDataPackProvider perWorldProvider;
   private DelegateDataPackManager manager;
 
@@ -96,7 +97,7 @@ public final class DataPacks {
           try {
             return Stream.of(pack.get("loot_tables").getContent(location, "json"));
           } catch (IOException ex) {
-            LOGGER.error("Error loading loot table at {}", location, ex);
+            LOGGER.error("Error loading loot table {} from pack {}, skipping", location, pack.getName(), ex);
             return Stream.empty();
           }
         })
@@ -106,27 +107,42 @@ public final class DataPacks {
   }
 
   public void fillAdvancements(Map<ResourceLocation, Advancement.Builder> toFill) {
-    manager.getEnabled()
-        .forEach(pack -> pack.get("advancements").forEachContent("json", (location, content) -> {
-              LOGGER.debug("Loading advancement at " + location);
-              toFill.computeIfAbsent(location, loc -> JsonUtils.fromJson(AdvancementManager.GSON, content.get(), Advancement.Builder.class, false));
-            })
-        );
+    manager.getEnabled().forEach(pack -> pack.get("advancements").forEachContent("json", (location, content) -> {
+      LOGGER.debug("Loading advancement at " + location);
+      if (!toFill.containsKey(location)) {
+        try {
+          Advancement.Builder builder = JsonUtils.gsonDeserialize(GSON, content.get(), Advancement.Builder.class);
+
+          if (builder == null) {
+            LOGGER.error("Couldn't load custom advancement {} from pack {} as it's empty or null", location, pack.getName());
+          } else {
+            toFill.put(location, builder);
+          }
+        } catch (IllegalArgumentException | JsonParseException ex) {
+          LOGGER.error("Parsing error loading custom advancement {} from pack {}", location, pack.getName(), ex);
+        }
+      }
+    }));
   }
 
   public void fillFunctions(FunctionManager functionManager, Map<ResourceLocation, FunctionObject> toFill) {
-    manager.getEnabled()
-        .forEach(pack -> pack.get("functions").forEachContent("mcfunction", (location, content) -> {
-              if (!location.getPath().isEmpty()) {
-                toFill.computeIfAbsent(location, loc -> FunctionObject.create(functionManager, Arrays.asList(content.get().split("\\r?\\n"))));
-              }
-            })
-        );
+    manager.getEnabled().forEach(pack -> pack.get("functions").forEachContent("mcfunction", (location, content) -> {
+      if (!location.getPath().isEmpty()) {
+        if (!toFill.containsKey(location)) {
+          try {
+            FunctionObject mcfunction = FunctionObject.create(functionManager, Arrays.asList(content.get().split("\\r?\\n")));
+            toFill.put(location, mcfunction);
+          } catch (IllegalArgumentException | JsonParseException ex) {
+            LOGGER.error("Parsing error loading custom function {} from pack {} ", location, pack.getName(), ex);
+          }
+        }
+      }
+    }));
   }
 
   @Mod.EventHandler
   public void init(FMLInitializationEvent event) {
-    datapacksDir = mcDir.resolve(PACK_DIRECTORY);
+    Path datapacksDir = mcDir.resolve(PACK_DIRECTORY);
     IDataPackProvider datapacksFolderProvider = new DataPackProvider(datapacksDir);
     IDataPackProvider dataFolderProvider = new StandaloneDataProvider(mcDir.resolve(DATA_DIRECTORY));
     manager = new DelegateDataPackManager(datapacksDir, dataFolderProvider, datapacksFolderProvider);
@@ -148,7 +164,7 @@ public final class DataPacks {
     perWorldProvider = new DataPackProvider(packDirectory);
     manager.saveOrder();
     manager.getProviders().add(0, perWorldProvider);
-    manager.setOrderLocation(packDirectory);
+//    manager.setOrderLocation(packDirectory);
     manager.rescan();
   }
 
@@ -161,7 +177,7 @@ public final class DataPacks {
   public void onServerStop(FMLServerStoppingEvent event) {
     manager.saveOrder();
     manager.getProviders().remove(this.perWorldProvider);
-    manager.setOrderLocation(datapacksDir);
+//    manager.setOrderLocation(datapacksDir);
     manager.rescan();
     this.perWorldProvider = null;
   }

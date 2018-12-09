@@ -77,16 +77,28 @@ tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-jar {
+
+task coreModJar(type: Jar) {
     from sourceSets.coremod.output
     manifest {
         attributes(
-                'FMLCorePlugin': project.coreMod,
-                'FMLCorePluginContainsFMLMod': true,
-                'ForceLoadAsMod': true
+                'FMLCorePlugin': project.coreMod
         )
     }
+    classifier = 'coremod'
 }
+def coreModFile = tasks.coreModJar.outputs.files.singleFile
+
+jar {
+    from coreModFile
+    manifest {
+        attributes([
+                'ContainedDeps': coreModFile.name
+        ])
+    }
+}
+
+tasks.getByName("jar").dependsOn tasks.getByName("coreModJar")
 
 runClient.outputs.upToDateWhen { false }
 runServer.outputs.upToDateWhen { false }
